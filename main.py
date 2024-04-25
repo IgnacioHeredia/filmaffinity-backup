@@ -51,6 +51,7 @@ def main(
     user_dir.mkdir()
 
     # Save data to csv
+    print('Saving CSV files to [bold]./data[/bold] folder.')
     for k, v in data.items():
         df = pd.DataFrame.from_dict(v)
         df.to_csv(
