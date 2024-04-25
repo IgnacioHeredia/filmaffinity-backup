@@ -193,23 +193,24 @@ def get_watched_movies(
                 )
 
                 movie = movie.find('div', attrs={'class': 'movie-card'})
+
                 info['FA movie ID'].append(
                     movie['data-movie-id']
                 )
                 info['FA score'].append(
                     movie.find(attrs={'class': 'avgrat-box'}).text
                 )
-
-                ele = movie.find(attrs={'class': 'mc-title'})
                 info['title'].append(
-                    ele.find('a').text.strip()
+                    movie.find(attrs={'class': 'mc-title'}).find('a').text.strip()
                 )
                 info['country'].append(
-                    ele.find('img')['alt'].strip()
+                    movie.find('img', attrs={'class': 'nflag'})['alt'].strip()
                 )
-                year = ele.find(text=True, recursive=False)
-                year = re.search(r'\((\d{4})\)', year).group(1)
-                info['year'].append(year)
+                # There are several year fields, keep the first non-zero one
+                years = movie.find_all('span', attrs={'class': 'mc-year'})
+                info['year'].append(
+                    [i.text for i in years if i.text][0]
+                )
 
                 directors = movie.find(attrs={'class': 'mc-director'})
                 info['directors'].append(
