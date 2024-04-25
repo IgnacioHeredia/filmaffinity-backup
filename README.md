@@ -17,7 +17,7 @@ To perform the backup, install the required packages and run `main.py` with your
 
 [^1]: To find your `user_id`, go to `Mis votaciones` and copy the ID from the url `https://www.filmaffinity.com/es/userratings.php?user_id={........}`.
 
-```console
+```bash
 pip install -r requirements.txt
 python main.py 861134
 ```
