@@ -14,13 +14,16 @@ Information saved:
 * **watched movies**: same as list movies, plus the `movie genre`
 
 To perform the backup, install the required packages and run `main.py` with your `user_id` [^1]:
-```python
-pip install -r requirements
+
+[^1]: To find your `user_id`, go to `Mis votaciones` and copy the ID from the url `https://www.filmaffinity.com/es/userratings.php?user_id={........}`.
+
+```console
+pip install -r requirements.txt
 python main.py 861134
 ```
 You data will be saved to the [./data](./data) folder.
 
-[^1]: To find your `user_id`, go to `Mis votaciones` and copy the ID from the url `https://www.filmaffinity.com/es/userratings.php?user_id={........}`.
+![alt text](console.png)
 
 The script intentionally waits 5s between each parsing request to avoid getting the IP blocked by the FilmAffinity server.
 
