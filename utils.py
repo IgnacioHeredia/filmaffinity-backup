@@ -44,6 +44,7 @@ def check_user(
 
 def get_user_lists(
         user_id: str,
+        max_page: int = None,  # max number of pages to retrieve
     ):
     """
     Retrieve list from a user
@@ -53,9 +54,11 @@ def get_user_lists(
     while True:
         url = f'https://www.filmaffinity.com/es/userlists.php?user_id={user_id}&p={page}'
 
-        # Check for pagination end
+        # Check for pagination end (or stop if requested)
         response = session.get(url, verify=True)
         if response.status_code != 200:
+            break
+        if max_page and page > max_page:
             break
 
         print(f'  [grey50]Parsing page {page}[/grey50]')
@@ -73,9 +76,39 @@ def get_user_lists(
     return user_lists
 
 
+def parse_movie_card(movie, info):
+    """
+    Movie card is mostly common for watched movies and list movies.
+    """
+    info['FA movie ID'].append(
+        movie['data-movie-id']
+    )
+    info['FA score'].append(
+        movie.find(attrs={'class': 'avgrat-box'}).text
+    )
+    info['title'].append(
+        movie.find(attrs={'class': 'mc-title'}).find('a').text.strip()
+    )
+    info['country'].append(
+        movie.find('img', attrs={'class': 'nflag'})['alt'].strip()
+    )
+    # There are several year fields, keep the first non-zero one
+    years = movie.find_all('span', attrs={'class': 'mc-year'})
+    info['year'].append(
+        [i.text for i in years if i.text][0]
+    )
+    # Join all director in same string
+    directors = movie.find(attrs={'class': 'mc-director'})
+    info['directors'].append(
+        ', '.join([i.text for i in directors.find_all('a')])
+    )
+    return info
+
+
 def get_list_movies(
         base_url: str,
-        order_by: str ='voto',
+        order_by: str = 'voto',
+        max_page: int = None,  # max number of pages to retrieve
     ):
     categories = {
         "posición": 0,
@@ -100,9 +133,11 @@ def get_list_movies(
     while True:
         url = f'{base_url}&page={page}&orderby={order_id}'
 
-        # Check for pagination end
+        # Check for pagination end (or stop if requested)
         response = session.get(url, verify=True)
         if response.status_code != 200:
+            break
+        if max_page and page > max_page:
             break
 
         print(f'  [grey50]Parsing page {page}[/grey50]')
@@ -116,30 +151,10 @@ def get_list_movies(
         # Parse movies
         movies = soup.find('ul', attrs={'class': 'movies_list'})
         for movie in movies.find_all('li'):
-            info['FA movie ID'].append(
-                movie['data-movie-id']
-            )
-            info['FA score'].append(
-                movie.find(attrs={'class': 'avgrat-box'}).text
-            )
             info['user score'].append(
                 movie.find(attrs={'class': 'user-rat-movie'}).text
             )
-            directors = movie.find(attrs={'class': 'mc-director'})
-            info['directors'].append(
-                ', '.join([i.text for i in directors.find_all('a')])
-            )
-
-            ele = movie.find(attrs={'class': 'mc-title'})
-            info['title'].append(
-                ele.find('a').text.strip()
-            )
-            info['country'].append(
-                ele.find('img')['alt'].strip()
-            )
-            year = ele.find(text=True, recursive=False)
-            year = re.search(r'\((\d{4})\)', year).group(1)
-            info['year'].append(year)
+            info = parse_movie_card(movie, info)
 
         page += 1
         time.sleep(5)  # sleep to avoid IP block
@@ -149,6 +164,7 @@ def get_list_movies(
 
 def get_watched_movies(
         user_id: str,
+        max_page: int = None,  # max number of pages to retrieve
     ):
     """
     Retrieve watched movies from a user.
@@ -171,9 +187,11 @@ def get_watched_movies(
 
         url = f'https://www.filmaffinity.com/es/userratings.php?user_id={user_id}&p={page}&orderby={orderby}'
 
-        # Check for pagination end
+        # Check for pagination end (or stop if requested)
         response = session.get(url, verify=True)
         if response.status_code != 200:
+            break
+        if max_page and page > max_page:
             break
 
         print(f'  [grey50]Parsing page {page}[/grey50]')
@@ -187,35 +205,11 @@ def get_watched_movies(
             movies = group.find_all('div', attrs={'class': 'user-ratings-movie'})
             for movie in movies:
                 info['genre'].append(genre)
-
                 info['user score'].append(
                     movie.find(attrs={'class': 'ur-mr-rat'}).text
                 )
-
                 movie = movie.find('div', attrs={'class': 'movie-card'})
-
-                info['FA movie ID'].append(
-                    movie['data-movie-id']
-                )
-                info['FA score'].append(
-                    movie.find(attrs={'class': 'avgrat-box'}).text
-                )
-                info['title'].append(
-                    movie.find(attrs={'class': 'mc-title'}).find('a').text.strip()
-                )
-                info['country'].append(
-                    movie.find('img', attrs={'class': 'nflag'})['alt'].strip()
-                )
-                # There are several year fields, keep the first non-zero one
-                years = movie.find_all('span', attrs={'class': 'mc-year'})
-                info['year'].append(
-                    [i.text for i in years if i.text][0]
-                )
-
-                directors = movie.find(attrs={'class': 'mc-director'})
-                info['directors'].append(
-                    ', '.join([i.text for i in directors.find_all('a')])
-                )
+                info = parse_movie_card(movie, info)
 
         page += 1
         time.sleep(5)  # sleep to avoid IP block
