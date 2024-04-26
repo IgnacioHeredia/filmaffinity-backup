@@ -1,0 +1,42 @@
+name: tests
+
+'on':
+  workflow_dispatch:
+  # Runs at 08:00 UTC everyday
+  schedule:
+    - cron: '0 0 * * 5'
+
+jobs:
+  exampleJob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        id: main_task
+        run: |
+          pip install -r requirements.txt
+          python tests.py
+
+      - name: Check last job status
+        id: lastJobStatus
+        if: always()
+        run: |
+          LAST_JOB_STATUS=$(gh run list --workflow main.yml | grep -oh "completed.*" | head -1 | awk '{print $2}')
+          echo "::set-output name=status::$LAST_JOB_STATUS"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+      # Only send email the first time the workflow fails
+      # (ie. job fails and the previous job run was successful)
+      # Otherwise you would receive an email in each of the subsequent failures
+      - name: Send email
+        if: always() &&  steps.main_task.outcome == 'failure' && steps.lastJobStatus.outputs.status == 'success'
+        run: |
+          curl -s https://gist.githubusercontent.com/IgnacioHeredia/5f8fd2fc7d56763e4060c7b8fc8e0212/raw/3b5915cf3b8e0fd3c67b7ef7a019175116f0c367/send_email.py | \
+          python - \
+          --from_user ${{secrets.FROM_MAIL_USERNAME}} \
+          --from_pwd ${{secrets.FROM_MAIL_PASSWORD}} \
+          --to_user ${{secrets.TO_MAIL_USERNAME}} \
+          --subject "Failed Github workflow"                 
