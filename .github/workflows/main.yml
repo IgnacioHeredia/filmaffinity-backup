@@ -1,9 +1,8 @@
 name: tests
 
 on:
-  workflow_dispatch:
-  # Runs at 08:00 UTC everyday
-  schedule:
+  workflow_dispatch:  # allow manual trigger
+  schedule:  # run on Fridays 00h00
     - cron: '0 0 * * 5'
 
 jobs:
@@ -39,4 +38,4 @@ jobs:
           --from_user ${{secrets.FROM_MAIL_USERNAME}} \
           --from_pwd ${{secrets.FROM_MAIL_PASSWORD}} \
           --to_user ${{secrets.TO_MAIL_USERNAME}} \
-          --subject "Failed Github workflow"                 
+          --subject "⚠ Failed Github workflow: filmaffinity-backup"                 
