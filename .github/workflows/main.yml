@@ -1,13 +1,13 @@
 name: tests
 
-'on':
+on:
   workflow_dispatch:
   # Runs at 08:00 UTC everyday
   schedule:
     - cron: '0 0 * * 5'
 
 jobs:
-  exampleJob:
+  main_job:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
