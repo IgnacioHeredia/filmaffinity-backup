@@ -1,5 +1,7 @@
 # FilmAffinity backup to CSV
 
+[![tests](https://github.com/IgnacioHeredia/filmaffinity-backup/actions/workflows/main.yml/badge.svg)](https://github.com/IgnacioHeredia/filmaffinity-backup/actions/workflows/main.yml)
+
 These are some _minimal_ scripts to backup your [FilmAffinity](https://www.filmaffinity.com/) data to a CSV.
 
 Information saved:
