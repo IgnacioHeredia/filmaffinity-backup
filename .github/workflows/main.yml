@@ -18,6 +18,7 @@ jobs:
           pip install -r requirements.txt
           python tests.py
 
+      # Based on: https://www.softwaretester.blog/detecting-github-workflow-job-run-status-changes
       - name: Check last job status
         id: lastJobStatus
         if: always()
