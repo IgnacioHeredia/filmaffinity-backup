@@ -4,6 +4,7 @@ watched movies. Only retrieve the first page for each.
 """
 
 import utils
+import pandas as pd
 
 user_id = '861134'
 
@@ -14,9 +15,15 @@ print('Retrieving user lists ...')
 lists = utils.get_user_lists(user_id, max_page=1)
 
 print('Retrieving list movies ...')
-_ = utils.get_list_movies(list(lists.values())[0], max_page=1)
+name, movies = utils.get_list_movies(list(lists.values())[0], max_page=1)
+for v in movies.values():
+    assert v, "List movies is empty!"
+print(pd.DataFrame(movies).iloc[:5])
 
 print('Retrieving watched movies ...')
-_ = utils.get_watched_movies(user_id, max_page=1)
+movies = utils.get_watched_movies(user_id, max_page=1)
+for v in movies.values():
+    assert v, "Watched movies is empty!"
+print(pd.DataFrame(movies).iloc[:5])
 
-print('Tests successfully passed!')
+print('✅ Tests successfully passed!')
