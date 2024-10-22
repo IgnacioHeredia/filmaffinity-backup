@@ -63,7 +63,7 @@ def get_user_lists(
 
         print(f'  [grey50]Parsing page {page}[/grey50]')
         soup = BeautifulSoup(response.text, "html.parser")
-        lists = soup.find(attrs={'class': 'user-lists'})
+        lists = soup.find(attrs={'class': 'fa-list-group'})
         for tmp in lists.find_all('li'):
             ele = tmp.find(
                 lambda tag: tag.name == "a" and tag.get("class", []) != ["ls-imgs"]
@@ -84,7 +84,7 @@ def parse_movie_card(movie, info):
         movie['data-movie-id']
     )
     info['FA score'].append(
-        movie.find(attrs={'class': 'avgrat-box'}).text
+        movie.find(attrs={'class': 'avg'}).text
     )
     info['title'].append(
         movie.find(attrs={'class': 'mc-title'}).find('a').text.strip()
@@ -145,14 +145,14 @@ def get_list_movies(
 
         # Find list title
         if page == 1:
-            ele = soup.find(attrs={'class': 'list-name-desc'})
+            ele = soup.find('span', attrs={'class': 'fs-5'})
             title = ele.text.split(':')[1].strip()
 
         # Parse movies
-        movies = soup.find('ul', attrs={'class': 'movies_list'})
+        movies = soup.find('ul', attrs={'class': 'fa-list-group'})
         for movie in movies.find_all('li'):
             info['user score'].append(
-                movie.find(attrs={'class': 'user-rat-movie'}).text
+                movie.find(attrs={'class': 'fa-user-rat-box'}).text
             )
             info = parse_movie_card(movie, info)
 
@@ -185,7 +185,7 @@ def get_watched_movies(
     page = 1
     while True:
 
-        url = f'https://www.filmaffinity.com/es/userratings.php?user_id={user_id}&p={page}&orderby={orderby}'
+        url = f'https://www.filmaffinity.com/es/userratings.php?user_id={user_id}&p={page}&orderby={orderby}&chv=list'
 
         # Check for pagination end (or stop if requested)
         response = session.get(url, verify=True)
@@ -197,16 +197,18 @@ def get_watched_movies(
         print(f'  [grey50]Parsing page {page}[/grey50]')
         soup = BeautifulSoup(response.text, "html.parser")
 
-        groups = soup.find_all('div', attrs={'class': 'user-ratings-wrapper'})
+        groups = soup.find_all('div', attrs={'class': 'user-ratings-list-resp'})
         for group in groups:
-            genre = group.find('div', attrs={'class': 'user-ratings-header'})
-            genre = genre.text.split(':')[1].strip()
+            # Genre field is no longer present
+            # genre = group.find('div', attrs={'class': 'user-ratings-header'})
+            # genre = genre.text.split(':')[1].strip()
+            genre = ''
 
-            movies = group.find_all('div', attrs={'class': 'user-ratings-movie'})
+            movies = group.find_all('div', class_='row mb-4')
             for movie in movies:
                 info['genre'].append(genre)
                 info['user score'].append(
-                    movie.find(attrs={'class': 'ur-mr-rat'}).text
+                    movie.find(attrs={'class': 'fa-user-rat-box'}).text.strip()
                 )
                 movie = movie.find('div', attrs={'class': 'movie-card'})
                 info = parse_movie_card(movie, info)
